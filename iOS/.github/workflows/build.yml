@@ -1,0 +1,29 @@
+name: Sinum Builder
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-dylib:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build macOS Universal dylib (x86_64 & arm64)
+        run: |
+          cd ./iOS
+          mkdir -p build
+          
+          # Компилируем под обе архитектуры сразу одной командой
+          xcrun -sdk macosx clang++ Main.m -dynamiclib \
+            -arch x86_64 -arch arm64 \
+            -o build/libSinum_macos_universal.dylib \
+            -framework Foundation
+
+      - name: Upload Universal dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: libSinum-macos-universal
+          path: iOS/build/libSinum_macos_universal.dylib
